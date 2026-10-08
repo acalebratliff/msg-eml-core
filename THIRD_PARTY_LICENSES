@@ -1,0 +1,70 @@
+Third-party software used by msg-eml-core
+=========================================
+
+Bundled in dist/ (shipped with the library)
+-------------------------------------------
+
+1. @kenjiuno/msgreader 1.28.0
+   Licence: Apache License 2.0 (same text as this project's LICENSE file)
+   Copyright 2016 Yury Karpovich; maintained by kenjiuno
+   Source: https://github.com/HiraokaHyperTools/msgreader
+   Use: reads the Compound File / MAPI property structure of .msg files.
+
+2. @kenjiuno/decompressrtf 0.1.4 (dependency of msgreader)
+   Licence: BSD 2-Clause
+   Source: https://github.com/HiraokaHyperTools/DeCompressRTF
+   Use: LZ decompression of PidTagRtfCompressed (wrapped with header and CRC
+   checks in src/rtf/decompress.js).
+
+   BSD 2-Clause License
+
+   Copyright (c) 2019, kenjiuno
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+
+   * Redistributions of source code must retain the above copyright notice, this
+     list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Used under Node.js only (not in the bundle)
+-------------------------------------------
+
+3. iconv-lite 0.6.3 (dependency of msgreader) - MIT, Copyright (c) 2011
+   Alexander Shtuchkin. Replaced in the bundle by src/iconv-shim.js.
+4. safer-buffer 2.1.2 (dependency of iconv-lite) - MIT, Copyright (c) 2018
+   Nikita Skovoroda.
+
+Development only (not distributed)
+----------------------------------
+
+5. esbuild 0.28.2 - MIT, Copyright (c) 2020 Evan Wallace. Builds dist/.
+
+Test tools run locally, not dependencies, not distributed
+---------------------------------------------------------
+
+- extract-msg 0.56.1 (GPL-3.0), Python, used by qa/indep.py as an
+  independent reader for comparison. It is run as a separate program from a
+  local virtual environment; no code from it is included here.
+- Sample .msg files used by qa/ are read by path from a local folder and are
+  not part of this repository. Committed test fixtures are synthetic
+  (built by test/helpers/build-msg.js) or are the published examples from
+  [MS-OXRTFCP].
+
+All bundled licences (Apache-2.0, BSD-2-Clause) are compatible with
+distribution under Apache-2.0 and inside MPL-2.0 software.

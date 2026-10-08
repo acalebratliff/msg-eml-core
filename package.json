@@ -1,0 +1,45 @@
+{
+  "name": "msg-eml-core",
+  "version": "0.1.0",
+  "description": "Convert Outlook .msg files to standards-correct .eml (RFC 5322/MIME). Browser and WebExtension safe ES module.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "build": "node scripts/build.js"
+  },
+  "keywords": [
+    "msg",
+    "eml",
+    "outlook",
+    "mime",
+    "thunderbird"
+  ],
+  "author": "A. Caleb Ratliff",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@kenjiuno/decompressrtf": "0.1.4",
+    "@kenjiuno/msgreader": "1.28.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src/",
+    "cli/",
+    "dist/",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_LICENSES"
+  ],
+  "private": true,
+  "bin": {
+    "msg2eml": "cli/msg2eml.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

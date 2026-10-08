@@ -1,0 +1,26 @@
+msg-eml-core
+Copyright 2026 A. Caleb Ratliff
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The distributed bundle (dist/) includes the following third-party software.
+Full licence texts are in THIRD_PARTY_LICENSES.
+
+  @kenjiuno/msgreader 1.28.0 - Apache License 2.0
+    Copyright 2019 HIRAOKA HYPERS TOOLS, Inc.
+    Copyright 2016 Yury Karpovich; maintained by kenjiuno
+    https://github.com/HiraokaHyperTools/msgreader
+
+  @kenjiuno/decompressrtf 0.1.4 - BSD 2-Clause License
+    Copyright (c) 2019, kenjiuno
+    https://github.com/HiraokaHyperTools/DeCompressRTF
+
+The RTF de-encapsulation code (src/rtf/rtf.js) is an original implementation
+written from Microsoft's published Open Specifications [MS-OXRTFEX] and the
+RTF 1.9.1 specification. The compressed-RTF header validation and CRC follow
+[MS-OXRTFCP]; its test vectors are the examples published in that document.
+
+The bundle must be distributed together with this NOTICE file and
+THIRD_PARTY_LICENSES. The qa/ folder is a local test harness only (it runs
+the GPL-licensed extract-msg as a separate program); it is not part of the
+package ("files" in package.json) and must not be distributed with it.
