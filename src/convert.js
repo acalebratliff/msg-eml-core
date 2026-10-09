@@ -376,7 +376,7 @@ export function buildEml(m, opts = {}, depth = 0) {
   const date = chooseDate(m, hdrs);
   report.date = date;
   if (date.value) headers.push(['Date', date.value]);
-  else warnings.push('The file has no date, so the message has none.');
+  else warnings.push('The file has no date, so no date is shown.');
 
   const mid = msgIdValue(m.messageId) || msgIdValue(headerValue(hdrs, 'Message-ID'));
   if (mid) headers.push(['Message-ID', mid]);

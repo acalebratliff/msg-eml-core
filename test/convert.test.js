@@ -122,7 +122,7 @@ test('gap 6: Date from submit time, Message-ID, In-Reply-To, References kept', (
   assert.equal(header(text, 'Importance'), 'high');
   const noDate = conv({ props: [[T.MESSAGE_CLASS, 'IPM.Note'], [T.SUBJECT, 'n']] });
   assert.equal(header(noDate.text, 'Date'), null);
-  assert.ok(noDate.report.warnings.includes('The file has no date, so the message has none.'));
+  assert.ok(noDate.report.warnings.includes('The file has no date, so no date is shown.'));
 });
 
 test('S/MIME signed: original entity passed through byte for byte', () => {
