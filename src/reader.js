@@ -190,7 +190,7 @@ export function readMsg(input, opts = {}, depth = 0) {
       parsed = parseOnce(u8, `cp${cpChoice.codepage}`);
       reparsed = true;
     } catch (e) {
-      warnings.push(`re-reading with code page ${cpChoice.codepage} failed; non-Unicode text may be wrong`);
+      warnings.push(`Some text may show the wrong characters (code page ${cpChoice.codepage} could not be applied).`);
     }
   }
   const { reader, data: d, extras } = parsed;
@@ -251,7 +251,9 @@ export function readMsg(input, opts = {}, depth = 0) {
     warnings,
   };
   model.html = readHtmlBody(d, extras.get(d), cp);
-  if (model.htmlProperty && model.html == null) warnings.push('message has a PidTagHtml property but no HTML could be read from it');
+  if (model.htmlProperty && model.html == null) {
+    warnings.push(`The HTML version of the body could not be read.${model.body ? ' The plain-text version is shown.' : ''}`);
+  }
 
   for (const rc of d.recipients || []) {
     const rx = collect(extras, rc, EXTRA_RECIP, cp);
@@ -286,14 +288,14 @@ export function readMsg(input, opts = {}, depth = 0) {
         att.embedded = readMsg(g.content, opts, depth + 1);
         att.filename = att.filename || g.fileName || '';
       } else if (att.method === 2 || att.method === 3 || att.method === 4 || att.method === 7) {
-        att.error = 'attachment is stored by reference (a link to a file outside the message), not its content';
+        att.error = 'it is only a link to a file outside the message';
       } else {
         const g = reader.getAttachment(a);
         att.data = g.content instanceof Uint8Array ? g.content : new Uint8Array(g.content || []);
       }
     } catch (e) {
       if (e instanceof MsgError && e.code === 'TOO_DEEP') throw e;
-      att.error = e instanceof MsgError ? e.message : `attachment could not be read (${e && e.message ? e.message : e})`;
+      att.error = e instanceof MsgError ? e.message : `it could not be read: ${e && e.message ? e.message : e}`;
     }
     model.attachments.push(att);
   });

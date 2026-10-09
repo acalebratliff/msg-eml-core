@@ -74,7 +74,7 @@ test('M6: PidTagHtml stored as PT_BINARY is still kept; plain messages report ht
 test('M6: an empty PidTagHtml is reported (htmlProperty true) with a warning, so a checker cannot pass it as plain text', () => {
   const { report } = convertMsgToEml(buildMsg({ props: [...base, [T.BODY, 'plain'], [HTML_A, new Uint8Array(0)]] }));
   assert.equal(report.body.htmlProperty, true);
-  assert.ok(report.warnings.some((w) => /PidTagHtml/.test(w)));
+  assert.ok(report.warnings.some((w) => /^The HTML version of the body could not be read\./.test(w)), report.warnings.join('\n'));
 });
 
 test('minor 1: characters whose lowercase changes length do not shift the charset rewrite', () => {

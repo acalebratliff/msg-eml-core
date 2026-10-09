@@ -28,7 +28,7 @@ test('CRC mismatch is reported, content still returned', () => {
   const bad = EX1.slice();
   bad[12] ^= 0xff;
   const r = decompressRtf(bad);
-  assert.match(r.warnings.join(), /CRC mismatch/);
+  assert.match(r.warnings.join(), /The formatted body failed a check/);
   assert.match(latin1(r.rtf), /hello world/);
 });
 

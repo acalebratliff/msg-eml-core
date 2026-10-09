@@ -122,7 +122,7 @@ test('gap 6: Date from submit time, Message-ID, In-Reply-To, References kept', (
   assert.equal(header(text, 'Importance'), 'high');
   const noDate = conv({ props: [[T.MESSAGE_CLASS, 'IPM.Note'], [T.SUBJECT, 'n']] });
   assert.equal(header(noDate.text, 'Date'), null);
-  assert.match(noDate.report.warnings.join(), /no date/);
+  assert.ok(noDate.report.warnings.includes('The file has no date, so the message has none.'));
 });
 
 test('S/MIME signed: original entity passed through byte for byte', () => {
@@ -150,14 +150,23 @@ test('attachments stored by reference are reported, not invented', () => {
   const { text, report } = conv({ props: [...base, [T.SUBJECT, 's'], [T.BODY, 'b']],
     attachments: [{ props: [[T.ATTACH_METHOD, 2], [T.ATTACH_LONG_FILENAME, 'link.doc']] }] });
   assert.ok(!text.includes('link.doc'));
-  assert.match(report.warnings.join(), /by reference/);
+  assert.ok(report.warnings.includes('The attachment "link.doc" was left out (it is only a link to a file outside the message).'), report.warnings.join('\n'));
 });
 
 test('the unresolved-sender warning names the From form actually written', () => {
   const dn = '/O=EXAMPLE/CN=JDOE';
   const props = [...base, [T.SUBJECT, 's'], [T.SENDER_NAME, 'Jane Doe'], [T.SENDER_EMAIL, dn], [T.SENDER_ADDRTYPE, 'EX']];
   const a = conv({ props });
-  assert.ok(a.report.warnings.some(w => w.includes('placeholder .invalid address')), a.report.warnings.join('\n'));
+  assert.ok(a.report.warnings.includes('The file has no email address for the sender (Jane Doe). From shows a placeholder address ending in @unresolved.invalid. A reply will not reach them.'), a.report.warnings.join('\n'));
   const b = conv({ props }, { unresolvedAddress: 'name-only' });
-  assert.ok(b.report.warnings.some(w => w.includes('the name only')), b.report.warnings.join('\n'));
+  assert.ok(b.report.warnings.includes('The file has no email address for the sender (Jane Doe). From shows the name only. A reply will not reach them.'), b.report.warnings.join('\n'));
+});
+
+test('warnings are plain sentences: recipients counted in words, singular and plural', () => {
+  const rc = (name) => ({ props: [[T.DISPLAY_NAME, name], [T.EMAIL_ADDRESS, `/O=EXAMPLE/CN=${name.toUpperCase()}`], [T.ADDRTYPE, 'EX'], [T.RECIPIENT_TYPE, 1]] });
+  const one = conv({ props: [...base, [T.SUBJECT, 's'], [T.BODY, 'b']], recipients: [rc('Ann')] });
+  assert.ok(one.report.warnings.includes('1 recipient has no email address in the file. It is shown with a placeholder address ending in @unresolved.invalid.'), one.report.warnings.join('\n'));
+  const two = conv({ props: [...base, [T.SUBJECT, 's'], [T.BODY, 'b']], recipients: [rc('Ann'), rc('Bo')] }, { unresolvedAddress: 'name-only' });
+  assert.ok(two.report.warnings.includes('2 recipients have no email address in the file. They are shown by name only.'), two.report.warnings.join('\n'));
+  for (const w of [...one.report.warnings, ...two.report.warnings]) assert.match(w, /^[A-Z0-9].*\.$/);
 });

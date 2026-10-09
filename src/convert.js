@@ -179,8 +179,8 @@ function makeFormatter(opts, warnings) {
       email = headerAddrSpec(p.email, utf8);
       if (!email && !warned.has(p.email)) {
         warned.add(p.email);
-        warnings.push(`address ${JSON.stringify(p.email)} cannot be written in a 7-bit header (non-ASCII local part); ` +
-          'shown as unresolved (option utf8Headers writes it as UTF-8, RFC 6532)');
+        // The utf8Headers option (RFC 6532) writes such an address as UTF-8 instead.
+        warnings.push(`The address ${JSON.stringify(p.email)} has characters that a mail header cannot carry. It is shown with a placeholder address.`);
       }
     }
     if (email) return p.name ? `${phrase(p.name)} <${email}>` : email;
@@ -228,7 +228,7 @@ function replayHeaders(hdrs, fmt, warnings) {
       }
       const val = addressListValue(v, fmt);
       if (val) out.push([k, val]);
-      else warnings.push(`stored ${k} header has no usable address; not copied`);
+      else warnings.push(`The original ${k} line has no usable address and was left out.`);
       continue;
     }
     out.push([k, unstructured(v)]);
@@ -341,18 +341,22 @@ export function buildEml(m, opts = {}, depth = 0) {
   if (from.email && sender.email && from.email.toLowerCase() !== sender.email.toLowerCase()) {
     headers.push(['Sender', fmt(sender)]);
   }
-  if (fromStr && !from.email) warnings.push(`sender has no SMTP address in the file; From shows ${(opts.unresolvedAddress || 'invalid-domain') === 'name-only' ? 'the name only' : 'the name with a placeholder .invalid address'} ("${from.name}")`);
+  if (fromStr && !from.email) warnings.push(`The file has no email address for the sender (${from.name}). From shows ${(opts.unresolvedAddress || 'invalid-domain') === 'name-only' ? 'the name only' : 'a placeholder address ending in @unresolved.invalid'}. A reply will not reach them.`);
 
   // Recipients
   const people = { to: [], cc: [], bcc: [] };
   let unresolved = 0;
   for (const rc of m.recipients) {
     const r = resolveRecipient(rc, ctx);
-    if (!r.email && !r.name) { warnings.push('a recipient with neither SMTP address nor name was dropped'); continue; }
+    if (!r.email && !r.name) { warnings.push('One recipient had no name or email address and was left out.'); continue; }
     if (!r.email) unresolved++;
     (people[rc.type] || people.to).push({ ...r, type: rc.type });
   }
-  if (unresolved) warnings.push(`${unresolved} recipient(s) have no SMTP address in the file; shown ${(opts.unresolvedAddress || 'invalid-domain') === 'name-only' ? 'by name only' : 'with a placeholder .invalid address'}`);
+  if (unresolved) {
+    const nameOnly = (opts.unresolvedAddress || 'invalid-domain') === 'name-only';
+    warnings.push(`${unresolved === 1 ? '1 recipient has' : `${unresolved} recipients have`} no email address in the file. ` +
+      `${unresolved === 1 ? 'It is' : 'They are'} shown ${nameOnly ? 'by name only' : 'with a placeholder address ending in @unresolved.invalid'}.`);
+  }
   report.addresses.recipients = [...people.to, ...people.cc, ...people.bcc].map((p) => ({ type: p.type, name: p.name, email: p.email, source: p.source }));
   // No recipient table but stored headers have the lists (e.g. some received mail).
   for (const [key, hn] of [['to', 'To'], ['cc', 'Cc']]) {
@@ -372,7 +376,7 @@ export function buildEml(m, opts = {}, depth = 0) {
   const date = chooseDate(m, hdrs);
   report.date = date;
   if (date.value) headers.push(['Date', date.value]);
-  else warnings.push('the file has no date; no Date header written');
+  else warnings.push('The file has no date, so the message has none.');
 
   const mid = msgIdValue(m.messageId) || msgIdValue(headerValue(hdrs, 'Message-ID'));
   if (mid) headers.push(['Message-ID', mid]);
@@ -401,14 +405,14 @@ export function buildEml(m, opts = {}, depth = 0) {
       // Some writers store only the multipart body without its header.
       // Nothing can rebuild it, so the message is written as an ordinary
       // one with the stored entity as an attachment (review minor 12).
-      warnings.push('signed message is stored without its MIME header; written as an ordinary message with the ' +
-        'signed content as an attachment, and the signature cannot be checked');
+      warnings.push('This is a signed message. It opens as an ordinary message with the signed content attached, ' +
+        'and the signature cannot be checked.');
     } else {
       const st = smimeType(att.data, att.mime);
       const fname = att.filename || 'smime.p7m';
       const p = Part.binary('application/pkcs7-mime', att.data, { filename: /\.p7[mz]$/i.test(fname) ? fname : 'smime.p7m' });
       if (st) p.params.unshift(['smime-type', st]);
-      else warnings.push('S/MIME content type not recognised (neither signed nor enveloped); written without smime-type');
+      else warnings.push("The message's encryption or signature type was not recognised. It may not open correctly.");
       report.body = { htmlProperty: !!m.htmlProperty, kind: st === 'signed-data' ? 'smime-opaque-signed' : st === 'enveloped-data' || st === 'authEnveloped-data' ? 'smime-encrypted' : 'smime-unknown', smimeType: st };
       return { bytes: serializeMessage(headers, p, depth, ser), report };
     }
@@ -442,7 +446,7 @@ export function buildEml(m, opts = {}, depth = 0) {
         report.body.textSource = 'RTF (converted to plain text)';
       }
     } catch (e) {
-      warnings.push(`RTF body could not be decompressed (${e && e.message ? e.message : e})`);
+      warnings.push(`The formatted body could not be read (${e && e.message ? e.message : e}). Some text may be missing.`);
     }
   }
   if (html) html = htmlCharsetToUtf8(html);
@@ -452,7 +456,7 @@ export function buildEml(m, opts = {}, depth = 0) {
   if (/^IPM\.(Appointment|Schedule\.Meeting)/i.test(cls)) {
     const organizer = from.email ? from : (sender.email ? sender : null);
     calendar = buildCalendar(m, { organizer, attendees: [...people.to, ...people.cc, ...people.bcc], body: text || '' }, warnings);
-    if (!calendar) warnings.push('calendar item has no start time; no text/calendar part written');
+    if (!calendar) warnings.push('This calendar item has no start time, so no calendar file was attached.');
   }
   let vcard = null;
   if (m.contact) vcard = contactVcard(m.contact);
@@ -464,7 +468,7 @@ export function buildEml(m, opts = {}, depth = 0) {
   for (const att of m.attachments) {
     const name = att.filename || att.displayName || '';
     if (att.error) {
-      warnings.push(`attachment "${name || att.index}" skipped: ${att.error}`);
+      warnings.push(`The attachment "${name || att.index}" was left out (${att.error}).`);
       report.attachments.push({ name, skipped: att.error });
       continue;
     }
@@ -481,7 +485,7 @@ export function buildEml(m, opts = {}, depth = 0) {
       const c = stripTrailingNul(String(att.cid)).trim();
       const inner = c.startsWith('<') && c.endsWith('>') ? c.slice(1, -1) : c;
       if (isValidCid(inner)) cid = inner;
-      else warnings.push(`attachment "${cleanForReport(name || att.index)}" has an unusable Content-ID; it was left out`);
+      else warnings.push(`The inline attachment "${cleanForReport(name || att.index)}" could not be placed in the text, so it is attached as an ordinary file.`);
     }
     const referenced = cid && cidReferenced(cidRefs, cid);
     if (referenced) {

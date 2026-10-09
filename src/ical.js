@@ -138,7 +138,7 @@ export function rrule(recur, zone, warnings) {
   const p = recur && recur.recurrencePattern;
   if (!p) return null;
   if (p.calendarType && p.calendarType !== 1 && p.calendarType !== 2 && p.calendarType !== 0) {
-    warnings.push('recurrence uses a non-Gregorian calendar; repeat rule not written');
+    warnings.push('The repeat schedule could not be carried over (it uses a non-Gregorian calendar). The first occurrence is shown.');
     return null;
   }
   const parts = [];
@@ -172,7 +172,7 @@ export function rrule(recur, zone, warnings) {
       break;
     }
     default:
-      warnings.push(`recurrence pattern type ${p.patternType} is not supported; repeat rule not written`);
+      warnings.push(`The repeat schedule could not be carried over (pattern type ${p.patternType}). The first occurrence is shown.`);
       return null;
   }
   if (p.endType === 8226 && p.occurrenceCount > 0) parts.push(`COUNT=${p.occurrenceCount}`);
@@ -247,7 +247,7 @@ export function buildCalendar(m, people, warnings) {
     // ORGANIZER in a REPLY, so it is written when known (review minor 10).
     const org = people.attendees.find((at) => at.email && at.type !== 'cc' && at.type !== 'bcc');
     if (org) main.push(`ORGANIZER${cn(org)}:${mailto(org)}`);
-    else warnings.push('meeting response: the organizer is not known; ORGANIZER not written');
+    else warnings.push('The meeting organizer is not in the file.');
     if (people.organizer && people.organizer.email) {
       main.push(`ATTENDEE${cn(people.organizer)};PARTSTAT=${partstat}:${mailto(people.organizer)}`);
     }

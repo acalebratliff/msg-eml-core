@@ -67,11 +67,11 @@ export function decompressRtf(input) {
   if (rawSize > compSize * 9 + 4096) throw new Error('compressed RTF RAWSIZE is implausible');
 
   const actual = rtfCrc(input, 16, compSize + 4);
-  if (actual !== crc) warnings.push('compressed RTF CRC mismatch; content used anyway');
+  if (actual !== crc) warnings.push('The formatted body failed a check. It is shown as found and may contain errors.');
 
   const out = decompressRTF(input.subarray(0, compSize + 4));
   const len = Math.min(out.length, rawSize);
-  if (out.length < rawSize) warnings.push('compressed RTF is shorter than RAWSIZE');
+  if (out.length < rawSize) warnings.push('The formatted body is shorter than the file says. Some text may be missing.');
   const rtf = new Uint8Array(len);
   for (let i = 0; i < len; i++) rtf[i] = out[i] & 0xff;
   return { rtf: trimNulBytes(rtf), warnings };

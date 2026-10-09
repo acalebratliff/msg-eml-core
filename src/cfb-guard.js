@@ -20,7 +20,7 @@ const DIR_ENTRY = 128;
 const SIGNATURE = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 
 function corrupt(detail) {
-  return new MsgError('CORRUPT_CFB', `The file is not a readable Outlook .msg (damaged structure: ${detail}).`);
+  return new MsgError('CORRUPT_CFB', `The file is damaged and cannot be read (detail: ${detail}).`);
 }
 
 /**

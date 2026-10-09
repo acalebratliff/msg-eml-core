@@ -65,7 +65,7 @@ test('B1: CR/LF in PidTagAttachContentId never reaches a header; Content-ID drop
   });
   assertWellFormed(eml);
   assert.ok(!/Content-ID:/i.test(text));
-  assert.ok(report.warnings.some((w) => /unusable Content-ID/.test(w)));
+  assert.ok(report.warnings.some((w) => /could not be placed in the text, so it is attached as an ordinary file\./.test(w)), report.warnings.join('\n'));
 });
 
 test('B1: CR/LF/NUL in every string that reaches a header is neutralised', () => {
@@ -139,7 +139,7 @@ test('M1: a non-ASCII local part is never corrupted; it is written as unresolved
   const { eml, text, report } = conv(spec, { unresolvedAddress: 'name-only' });
   assertWellFormed(eml);
   assert.equal(header(text, 'From'), 'Zoe:;');
-  assert.ok(report.warnings.some((w) => /non-ASCII local part/.test(w)));
+  assert.ok(report.warnings.some((w) => /has characters that a mail header cannot carry\. It is shown with a placeholder address\./.test(w)), report.warnings.join('\n'));
   const a2 = conv(spec, { unresolvedAddress: 'invalid-domain' });
   assert.match(header(a2.text, 'From'), /^Zoe <zoe\.[0-9a-f]{8}@unresolved\.invalid>$/);
 });
@@ -230,7 +230,7 @@ test('M5: IPM.Note.SMIME is labelled signed-data or enveloped-data from the CMS 
   assert.match(mk(der([0x07, 0x03]), 'application/pkcs7-mime; smime-type=signed-data').text, /smime-type=signed-data/);
   const unknown = mk(Uint8Array.from(new Array(40).fill(7)));
   assert.ok(!/smime-type/.test(unknown.text));
-  assert.ok(unknown.report.warnings.some((w) => /not recognised/.test(w)));
+  assert.ok(unknown.report.warnings.some((w) => /encryption or signature type was not recognised/.test(w)));
   // long-form DER length
   assert.equal(smimeType(Uint8Array.from([0x30, 0x82, 0x01, 0x00, ...der([0x07, 0x02]).subarray(2)])), 'signed-data');
 });
