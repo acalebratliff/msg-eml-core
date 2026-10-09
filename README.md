@@ -22,7 +22,7 @@ CLI: `node cli/msg2eml.js in.msg out.eml`
 
 ## Status
 
-Used by [MSG Opener for Thunderbird](https://github.com/acalebratliff/msg-for-thunderbird). Written with AI assistance (Claude), reviewed and tested by the author.
+Used by [MSG Opener for Thunderbird](https://github.com/acalebratliff/msg-for-thunderbird). Written and tested with AI assistance (Claude). The author reviews and publishes.
 
 ## Licence
 
