@@ -65,6 +65,16 @@ Test tools run locally, not dependencies, not distributed
   not part of this repository. Committed test fixtures are synthetic
   (built by test/helpers/build-msg.js) or are the published examples from
   [MS-OXRTFCP].
+- Committed test fixtures in test/fixtures/ taken from msgreader
+  (https://github.com/HiraokaHyperTools/msgreader, Apache License 2.0,
+  Copyright 2016 Yury Karpovich; maintained by kenjiuno), at commit
+  3a5a9359a0fca87d2ece0d3e44317c876bfdf327, under test/ in that repository:
+    "Hello +CJK.msg"        (copied unchanged)
+    "nonUnicodeCP932.msg"   (copied unchanged; input to the next file)
+  test/fixtures/synthetic-cp1252.msg is derived from nonUnicodeCP932.msg by
+  test/helpers/make-cp1252-fixture.js (one string stream and two property
+  values changed). The fixtures are in the repository only, not in the
+  package ("files" in package.json).
 
 All bundled licences (Apache-2.0, BSD-2-Clause) are compatible with
 distribution under Apache-2.0 and inside MPL-2.0 software.
