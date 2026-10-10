@@ -48,3 +48,11 @@ test('iconv shim used by the browser bundle', () => {
   assert.deepEqual([...shimEncode('A', 'utf16le')], [0x41, 0]);
   assert.throws(() => shimEncode('x', 'cp932'));
 });
+
+test('cp1252 0x80-0x9F decodes to the Windows characters, never to C1 controls', () => {
+  // Outlook AutoCorrect output: curly quotes, en/em dashes, euro, ellipsis.
+  const bytes = Uint8Array.from([0x91, 0x92, 0x93, 0x94, 0x96, 0x97, 0x80, 0x85]);
+  const out = decodeBytes(bytes, 1252);
+  assert.equal(out, '‘’“”–—€…');
+  for (const ch of out) assert.ok(ch.charCodeAt(0) > 0x9f, `C1 control leaked: U+${ch.charCodeAt(0).toString(16)}`);
+});
