@@ -38,3 +38,21 @@ test('Hello +CJK.msg (msgreader): Unicode-only, so the ANSI code page is ignored
   assert.match(text, /[\u3000-\u9fff\uff00-\uffef]/);
   assert.ok(!text.includes('\ufffd'));
 });
+
+test('synthetic cp1252 .msg: curly quotes, dashes, euro and ellipsis, no C1 controls', () => {
+  // Built by test/helpers/make-cp1252-fixture.js from msgreader's nonUnicodeCP932.msg.
+  // Caveat of the recipe: only the subject stream was rewritten, so the compressed
+  // RTF (and the body text) still carry the original Japanese bytes.
+  const { eml, report } = convertMsgToEml(load('synthetic-cp1252.msg'));
+  const subject = subjectOf(eml);
+  assert.ok(subject.includes('‘’“”–—€…'), `got ${JSON.stringify(subject)}`);
+  for (const ch of subject) assert.ok(!(ch.charCodeAt(0) >= 0x80 && ch.charCodeAt(0) <= 0x9f), `C1 control leaked: U+${ch.charCodeAt(0).toString(16)}`);
+  assert.equal(report.codepage.codepage, 1252);
+  assert.equal(report.codepage.source, 'PidTagMessageLocaleId');
+  assert.equal(report.codepage.applied, true);
+});
+
+test('the original CP932 fixture still reads as Japanese (the cp1252 patch is what changes the result)', () => {
+  const { report } = convertMsgToEml(load('nonUnicodeCP932.msg'));
+  assert.equal(report.codepage.codepage, 932);
+});
